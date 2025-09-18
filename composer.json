@@ -14,7 +14,11 @@
     "source": "https://github.com/kathyisawesome/wc-mnm-price",
     "issues": "https://github.com/kathyisawesome/wc-mnm-price/issues"
   },
+  "require": {
+    "afragen/git-updater-lite": "^1"
+  },
   "require-dev": {
+    "brianhenryie/strauss": "^0.20.1",
     "woocommerce/woocommerce-sniffs": "^1.0",
     "wp-cli/i18n-command": "^2.6"
   },
@@ -33,6 +37,16 @@
     ],
     "phpcb": [
       "phpcbf . "
+    ],
+    "prefix-namespaces": [
+      "strauss",
+      "@php composer dump-autoload"
+    ],
+    "post-install-cmd": [
+      "@prefix-namespaces"
+    ],
+    "post-update-cmd": [
+      "@prefix-namespaces"
     ]
   },
   "config": {
@@ -46,7 +60,14 @@
       "makepot": "Generate a .pot file for translation",
       "makepot-audit": "Generate a .pot file for translation. Dry run.",
       "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
-      "phpcb": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
+      "phpcb": "Fix coding standards warnings/errors automatically with PHP Code Beautifier",
+      "prefix-namespaces": "Prefix namespaces of dependencies with Strauss"
+    },
+    "strauss": {
+      "target_directory": "packages",
+      "namespace_prefix": "Backcourt\\MNMWeight\\Vendor",
+      "classmap_prefix": "Backcourt_MNM_Weight_Vendor_",
+      "constant_prefix": "BCMNMWeight_"
     }
   }
 }

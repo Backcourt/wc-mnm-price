@@ -21,3 +21,6 @@ composer.lock
 
 # Temporary files
 *.bak
+
+# BrianHenryIE/Strauss - PHP Namespace Renamer
+bin/strauss.phar
