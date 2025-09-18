@@ -1,7 +1,23 @@
-node_modules/
-build/
-deploy/
+# NPM
+/node_modules/
+/deploy/
+/build/
+npm-debug.log
 package-lock.json
+
+# Compiled assets
 assets/js/frontend/*.min.js
-assets/js/backend/*.min.js
+assets/js/admin/*.min.js
+assets/css/
 languages/
+
+# Editor
+.vscode/
+
+# Composer
+composer.lock
+/vendor/*
+/packages/*
+
+# Temporary files
+*.bak
