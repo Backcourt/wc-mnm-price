@@ -1,7 +1,7 @@
 {
-  "name": "kathyisawesome/wc-mnm-price",
+  "name": "backcourt/wc-mnm-price",
   "description": "Validate mix and match products by price.",
-  "homepage": "https://github.com/kathyisawesome/wc-mnm-price",
+  "homepage": "https://github.com/backcourt/wc-mnm-price",
   "type": "wordpress-plugin",
   "license": "GPL-3.0-or-later",
   "authors": [
@@ -11,8 +11,8 @@
     }
   ],
   "support": {
-    "source": "https://github.com/kathyisawesome/wc-mnm-price",
-    "issues": "https://github.com/kathyisawesome/wc-mnm-price/issues"
+    "source": "https://github.com/backcourt/wc-mnm-price",
+    "issues": "https://github.com/backcourt/wc-mnm-price/issues"
   },
   "require": {
     "afragen/git-updater-lite": "^1"
@@ -24,7 +24,7 @@
   },
   "scripts": {
     "makepot-audit": [
-      "wp --allow-root i18n make-pot . languages/wc-mnm-price.pot --slug=wc-mnm-price --exclude=\".github,.wordpress-org,build,deploy,node_modules,packages,vendor\" --headers='{\"Report-Msgid-Bugs-To\":\"https://github.com/kathyisawesome/wc-mnm-price/issues/new\"}'"
+      "wp --allow-root i18n make-pot . languages/wc-mnm-price.pot --slug=wc-mnm-price --exclude=\".github,.wordpress-org,build,deploy,node_modules,packages,vendor\" --headers='{\"Report-Msgid-Bugs-To\":\"https://github.com/backcourt/wc-mnm-price/issues/new\"}'"
     ],
     "makepot": [
       "@makepot-audit --skip-audit"
