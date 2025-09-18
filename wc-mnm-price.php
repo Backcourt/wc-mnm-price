@@ -193,12 +193,15 @@ if ( ! class_exists( 'WC_MNM_Price' ) ) :
 					if ( '' === value ) {
 						$( '#mnm_product_data .mnm_container_size_options' ).show();
 						$( '#mnm_product_data .show_if_validate_by_price' ).hide();
+						$( '#mnm_product_data .hide_if_validate_by_price' ).show();
 					} else {
 						$( '#mnm_product_data .mnm_container_size_options' ).hide();
 						if ( 'price' === value ) {
 							$( '#mnm_product_data .show_if_validate_by_price' ).show();
+							$( '#mnm_product_data .hide_if_validate_by_price' ).hide();
 						} else {
 							$( '#mnm_product_data .show_if_validate_by_price' ).hide();
+							$( '#mnm_product_data .hide_if_validate_by_price' ).show();
 						}
 					}
 				});
