@@ -49,13 +49,13 @@ class WC_MNM_Price {
 		add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
 
 		// Add extra meta.
-		add_action( 'woocommerce_mnm_product_options', array( __CLASS__, 'container_options') , 10, 2 );
+		add_action( 'wc_mnm_admin_product_options', array( __CLASS__, 'container_options') , 10, 2 );
 		add_filter( 'wc_mnm_validation_options', array( __CLASS__, 'validation_options' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( __CLASS__, 'process_meta' ), 20 );
 
 		// Register Scripts.
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_scripts' ) );
-		add_filter( 'woocommerce_mix_and_match_data_attributes', array( __CLASS__, 'add_data_attributes' ), 10, 2 );
+		add_filter( 'wc_mnm_container_data_attributes', array( __CLASS__, 'add_data_attributes' ), 10, 2 );
 
 		// Display Scripts.
 		add_action( 'woocommerce_mix-and-match_add_to_cart', array( __CLASS__, 'load_scripts' ) );
@@ -64,13 +64,13 @@ class WC_MNM_Price {
 		add_action( 'wc_quick_view_enqueue_scripts', array( __CLASS__, 'load_scripts' ) );
 
 		// Validation.
-		add_filter( 'woocommerce_mnm_add_to_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
-		add_filter( 'woocommerce_mnm_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
-		add_filter( 'woocommerce_mnm_add_to_order_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+		add_filter( 'wc_mnm_add_to_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+		add_filter( 'wc_mnm_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+		add_filter( 'wc_mnm_add_to_order_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
 
 		// Bypass min/max sizes when in price validation mode.
-		add_filter( 'woocommerce_mnm_min_container_size', array( __CLASS__, 'remove_min_size' ), 10, 2 );
-		add_filter( 'woocommerce_mnm_max_container_size', array( __CLASS__, 'remove_max_size' ), 10, 2 );
+		add_filter( 'wc_mnm_container_min_size', array( __CLASS__, 'remove_min_size' ), 10, 2 );
+		add_filter( 'wc_mnm_container_max_size', array( __CLASS__, 'remove_max_size' ), 10, 2 );
 
 		// Share a validation mode input with Weight validation plugin.
 		add_filter( 'wc_mnm_admin_show_validation_mode_option', '__return_false' );
