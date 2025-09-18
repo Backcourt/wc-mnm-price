@@ -24,150 +24,149 @@
  **/
 if ( ! class_exists( 'WC_MNM_Price' ) ) :
 
-class WC_MNM_Price {
+	class WC_MNM_Price {
 
-	/**
-	 * constants
-	 */
-	const VERSION = '1.3.2';
-	const REQ_MNM_VERSION = '2.8.0';
+		/**
+		 * constants
+		 */
+		const VERSION         = '1.3.2';
+		const REQ_MNM_VERSION = '2.8.0';
 
-	/**
-	 * WC_MNM_Price Constructor
-	 *
-	 * @access 	public
-     * @return 	WC_MNM_Price
-	 */
-	public static function init() {
+		/**
+		 * WC_MNM_Price Constructor
+		 *
+		 * @access  public
+		 * @return  WC_MNM_Price
+		 */
+		public static function init() {
 
-		// Quietly quit if Mix and Match is not active or below required version.
-		if ( ! function_exists( 'wc_mix_and_match' ) || version_compare( wc_mix_and_match()->version, self::REQ_MNM_VERSION, '<' ) ) {
-			return false;
+			// Quietly quit if Mix and Match is not active or below required version.
+			if ( ! function_exists( 'wc_mix_and_match' ) || version_compare( wc_mix_and_match()->version, self::REQ_MNM_VERSION, '<' ) ) {
+				return false;
+			}
+
+			// Load translation files.
+			add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
+
+			// Add extra meta.
+			add_action( 'wc_mnm_admin_product_options', array( __CLASS__, 'container_options' ) , 10, 2 );
+			add_filter( 'wc_mnm_validation_options', array( __CLASS__, 'validation_options' ) );
+			add_action( 'woocommerce_admin_process_product_object', array( __CLASS__, 'process_meta' ), 20 );
+
+			// Register Scripts.
+			add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_scripts' ) );
+			add_filter( 'wc_mnm_container_data_attributes', array( __CLASS__, 'add_data_attributes' ), 10, 2 );
+
+			// Display Scripts.
+			add_action( 'woocommerce_mix-and-match_add_to_cart', array( __CLASS__, 'load_scripts' ) );
+
+			// QuickView support.
+			add_action( 'wc_quick_view_enqueue_scripts', array( __CLASS__, 'load_scripts' ) );
+
+			// Validation.
+			add_filter( 'wc_mnm_add_to_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+			add_filter( 'wc_mnm_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+			add_filter( 'wc_mnm_add_to_order_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
+
+			// Bypass min/max sizes when in price validation mode.
+			add_filter( 'wc_mnm_container_min_size', array( __CLASS__, 'remove_min_size' ), 10, 2 );
+			add_filter( 'wc_mnm_container_max_size', array( __CLASS__, 'remove_max_size' ), 10, 2 );
+
+			// Share a validation mode input with Weight validation plugin.
+			add_filter( 'wc_mnm_admin_show_validation_mode_option', '__return_false' );
 		}
 
-		// Load translation files.
-		add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
 
-		// Add extra meta.
-		add_action( 'wc_mnm_admin_product_options', array( __CLASS__, 'container_options') , 10, 2 );
-		add_filter( 'wc_mnm_validation_options', array( __CLASS__, 'validation_options' ) );
-		add_action( 'woocommerce_admin_process_product_object', array( __CLASS__, 'process_meta' ), 20 );
-
-		// Register Scripts.
-		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_scripts' ) );
-		add_filter( 'wc_mnm_container_data_attributes', array( __CLASS__, 'add_data_attributes' ), 10, 2 );
-
-		// Display Scripts.
-		add_action( 'woocommerce_mix-and-match_add_to_cart', array( __CLASS__, 'load_scripts' ) );
-
-		// QuickView support.
-		add_action( 'wc_quick_view_enqueue_scripts', array( __CLASS__, 'load_scripts' ) );
-
-		// Validation.
-		add_filter( 'wc_mnm_add_to_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
-		add_filter( 'wc_mnm_cart_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
-		add_filter( 'wc_mnm_add_to_order_container_validation', array( __CLASS__, 'validation' ), 10, 3 );
-
-		// Bypass min/max sizes when in price validation mode.
-		add_filter( 'wc_mnm_container_min_size', array( __CLASS__, 'remove_min_size' ), 10, 2 );
-		add_filter( 'wc_mnm_container_max_size', array( __CLASS__, 'remove_max_size' ), 10, 2 );
-
-		// Share a validation mode input with Weight validation plugin.
-		add_filter( 'wc_mnm_admin_show_validation_mode_option', '__return_false' );
-
-    }
+		/*-----------------------------------------------------------------------------------*/
+		/* Localization */
+		/*-----------------------------------------------------------------------------------*/
 
 
-	/*-----------------------------------------------------------------------------------*/
-	/* Localization */
-	/*-----------------------------------------------------------------------------------*/
+		/**
+		 * Make the plugin translation ready
+		 *
+		 * @return void
+		 */
+		public static function load_plugin_textdomain() {
+			load_plugin_textdomain( 'wc-mnm-price' , false , dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		}
+
+		/*-----------------------------------------------------------------------------------*/
+		/* Admin */
+		/*-----------------------------------------------------------------------------------*/
 
 
-	/**
-	 * Make the plugin translation ready
-	 *
-	 * @return void
-	 */
-	public static function load_plugin_textdomain() {
-		load_plugin_textdomain( 'wc-mnm-price' , false , dirname( plugin_basename( __FILE__ ) ) .  '/languages/' );
-	}
-
-	/*-----------------------------------------------------------------------------------*/
-	/* Admin */
-	/*-----------------------------------------------------------------------------------*/
-
-
-	/**
-	 * Adds the container max price option writepanel options.
-	 *
-	 * @param int $post_id
-	 * @param  WC_Product_Mix_and_Match  $mnm_product_object
-	 */
-	public static function container_options( $post_id, $mnm_product_object ) {
+		/**
+		 * Adds the container max price option writepanel options.
+		 *
+		 * @param int $post_id
+		 * @param  WC_Product_Mix_and_Match  $mnm_product_object
+		 */
+		public static function container_options( $post_id, $mnm_product_object ) {
 		
-		$allowed_options = self::get_validation_options();
-		$value = $mnm_product_object->get_meta( '_mnm_validation_mode' );
-		$value = array_key_exists( $value, $allowed_options ) ? $value : '';
+			$allowed_options = self::get_validation_options();
+			$value           = $mnm_product_object->get_meta( '_mnm_validation_mode' );
+			$value           = array_key_exists( $value, $allowed_options ) ? $value : '';
 
-		woocommerce_wp_radio( 
+			woocommerce_wp_radio( 
 			array(
 				'id'      => '_mnm_validation_mode',
 				'class'   => 'select short mnm_validation_mode',
 				'label'   => __( 'Validation mode', 'wc-mnm-price' ),
-				'value'	  => $value,
+				'value'   => $value,
 				'options' => $allowed_options,
 			)
-		);
+			);
 
-		woocommerce_wp_text_input( array(
+			woocommerce_wp_text_input( array(
 			'id'            => '_mnm_min_container_price',
 			'label'       => __( 'Min Container Price', 'wc-mnm-price' ) . ' (' . get_woocommerce_currency_symbol() . ')',
 			'desc_tip'    => true,
 			'description' => __( 'Min price of containers in decimal form', 'wc-mnm-price' ),
 			'type'        => 'text',
 			'data_type'   => 'decimal',
-			'value'			=> $mnm_product_object->get_meta( '_mnm_min_container_price', true, 'edit' ),
+			'value'         => $mnm_product_object->get_meta( '_mnm_min_container_price', true, 'edit' ),
 			'desc_tip'      => true,
-			'wrapper_class' => 'show_if_validate_by_price'
-		) );
+			'wrapper_class' => 'show_if_validate_by_price',
+			) );
 
-		woocommerce_wp_text_input( array(
+			woocommerce_wp_text_input( array(
 			'id'            => '_mnm_max_container_price',
 			'label'       => __( 'Max Container Price', 'wc-mnm-price' ) . ' (' . get_woocommerce_currency_symbol() . ')',
 			'desc_tip'    => true,
 			'description' => __( 'Maximum price of containers in decimal form', 'wc-mnm-price' ),
 			'type'        => 'text',
 			'data_type'   => 'decimal',
-			'value'			=> $mnm_product_object->get_meta( '_mnm_max_container_price', true, 'edit' ),
+			'value'         => $mnm_product_object->get_meta( '_mnm_max_container_price', true, 'edit' ),
 			'desc_tip'      => true,
-			'wrapper_class' => 'show_if_validate_by_price'
-		) );
+			'wrapper_class' => 'show_if_validate_by_price',
+			) );
 
-		?>
+			?>
 		<script>
 			jQuery( document ).ready( function( $ ) {
 
 				$( '#mnm_product_data input#_mnm_per_product_pricing' ).change( function() {
 
-                    var options      = $( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'li' ).length;
-                    var $price_input = $( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'input[value="price"]' );
+					var options      = $( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'li' ).length;
+					var $price_input = $( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'input[value="price"]' );
 
 					if ( $( this ).prop( 'checked') ) {
 						$( '#mnm_product_data ._mnm_validation_mode_field' ).show();
-                        $price_input.closest( 'li' ).show();
+						$price_input.closest( 'li' ).show();
 					} else {
-                        // More than 2 options means another validation plugin is in play.
-                        if ( options > 2 ) {
-                            $price_input.closest( 'li' ).hide();
-                        } else {
-                            $( '#mnm_product_data ._mnm_validation_mode_field' ).hide();
-                        }
+						// More than 2 options means another validation plugin is in play.
+						if ( options > 2 ) {
+							$price_input.closest( 'li' ).hide();
+						} else {
+							$( '#mnm_product_data ._mnm_validation_mode_field' ).hide();
+						}
 
-                        // If price validation mode when leaving per-item pricing, revert to default validation.
-                        if ( $price_input.prop( 'checked' ) ) {
-                            $price_input.prop( 'checked', false );
-                            $( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'input[value=""]' ).prop( 'checked', true );
-                        }
+						// If price validation mode when leaving per-item pricing, revert to default validation.
+						if ( $price_input.prop( 'checked' ) ) {
+							$price_input.prop( 'checked', false );
+							$( '#mnm_product_data ._mnm_validation_mode_field' ).find( 'input[value=""]' ).prop( 'checked', true );
+						}
 					}
 
 				} );
@@ -197,120 +196,118 @@ class WC_MNM_Price {
 
 		</script>
 
-		<?php
-
-	}
-
-	/**
-	 * Add the options via filter, so we can work with other validation mini-extensions.
-	 *
-	 * @param  array $options Validation options
-	 * @return array
-	 */
-	public static function validation_options( $options ) {
-		$options[ '' ]      = esc_html__( 'Use default', 'wc-mnm-price' );
-		$options[ 'price' ] = esc_html__( 'Validate by price', 'wc-mnm-price' );
-		return $options;
-	}
-
-	/**
-	 * Saves the new meta field.
-	 *
-	 * @param  WC_Product_Mix_and_Match  $mnm_product_object
-	 */
-	public static function process_meta( $product ) {
-
-		if ( $product->is_type( 'mix-and-match' ) ) {
-
-			$allowed_options = self::get_validation_options();
-
-			if ( ! empty( $_POST[ '_mnm_validation_mode' ] ) && array_key_exists( $_POST[ '_mnm_validation_mode' ], $allowed_options ) ) {
-				$product->update_meta_data( '_mnm_validation_mode', wc_clean( $_POST[ '_mnm_validation_mode' ] ) );
-			} else {
-				$product->delete_meta_data( '_mnm_validation_mode' );
-			}
-
-			if ( ! empty( $_POST[ '_mnm_max_container_price' ] ) ) {
-				$product->update_meta_data( '_mnm_max_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_max_container_price' ] ) ) );
-			} else {
-				$product->delete_meta_data( '_mnm_max_container_price' );
-			}
-
-			if ( ! empty( $_POST[ '_mnm_min_container_price' ] ) ) {
-				$product->update_meta_data( '_mnm_min_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_min_container_price' ] ) ) );
-			}	else {
-				$product->delete_meta_data( '_mnm_min_container_price' );
-			}
-
+			<?php
 		}
 
-	}
-
-
-
-	/*-----------------------------------------------------------------------------------*/
-	/* Cart Functions */
-	/*-----------------------------------------------------------------------------------*/
-
-
-	/**
-	 * Server-side validation
-	 * 
-	 * @param WP_Error $errors
-	 * @param obj WC_Product_Mix_and_Match $product
-	 * @param obj WC_Mix_and_Match_Stock_Manager $mnm_stock
-	 * @return  WP_Error 
-	 */
-	public static function validation( $errors, $product, $mnm_stock ) {
-
-		if ( self::validate_by_price( $product ) ) {
-
-			// Remove quantity-based errors.
-			$errors->remove( 'wc_mnm_configuration_too_many_items' );
-			$errors->remove( 'wc_mnm_configuration_too_few_items' );
-
-			$selected_items = $mnm_stock->get_items();
-
-			$total_price = 0;
-
-			foreach ( $selected_items as $selected_item ) {
-				$selected_product = $selected_item->get_product();
-				$total_price    += $selected_product ? $selected_product->get_price() * $selected_item->get_quantity() : 0;
-			}
-
-			$min_price = wc_format_decimal( $product->get_meta( '_mnm_min_container_price', true ) );
-			$max_price = wc_format_decimal( $product->get_meta( '_mnm_max_container_price', true ) );
-
-			// Validate the total price.
-			if ( $min_price && $total_price < $min_price ) {
-				$notice = sprintf( esc_html( 'You have not selected enough product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $max_price ) );
-				$errors->add( 'wc_mnm_configuration_price_too_low', $notice );
-			} elseif ( $max_price && $total_price > $max_price ) {
-				$notice = sprintf( esc_html( 'You have selected too much product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $min_price ) );
-				$errors->add( 'wc_mnm_configuration_price_too_high', $notice );
-			}
-
+		/**
+		 * Add the options via filter, so we can work with other validation mini-extensions.
+		 *
+		 * @param  array $options Validation options
+		 * @return array
+		 */
+		public static function validation_options( $options ) {
+			$options[ '' ]      = esc_html__( 'Use default', 'wc-mnm-price' );
+			$options[ 'price' ] = esc_html__( 'Validate by price', 'wc-mnm-price' );
+			return $options;
 		}
 
-		return $errors;
-	}
+		/**
+		 * Saves the new meta field.
+		 *
+		 * @param  WC_Product_Mix_and_Match  $mnm_product_object
+		 */
+		public static function process_meta( $product ) {
 
-	/*-----------------------------------------------------------------------------------*/
-	/* Scripts and Styles */
-	/*-----------------------------------------------------------------------------------*/
+			if ( $product->is_type( 'mix-and-match' ) ) {
 
-	/**
-	 * Register scripts
-	 *
-	 * @return void
-	 */
-	public static function register_scripts() {
+				$allowed_options = self::get_validation_options();
 
-		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+				if ( ! empty( $_POST[ '_mnm_validation_mode' ] ) && array_key_exists( $_POST[ '_mnm_validation_mode' ], $allowed_options ) ) {
+					$product->update_meta_data( '_mnm_validation_mode', wc_clean( $_POST[ '_mnm_validation_mode' ] ) );
+				} else {
+					$product->delete_meta_data( '_mnm_validation_mode' );
+				}
 
-		wp_register_script( 'wc-add-to-cart-mnm-price-validation', plugins_url( '/assets/js/frontend/wc-add-to-cart-mnm-price-validation' .  $suffix . '.js', __FILE__ ), array( 'wc-add-to-cart-mnm' ), self::VERSION, true );
+				if ( ! empty( $_POST[ '_mnm_max_container_price' ] ) ) {
+					$product->update_meta_data( '_mnm_max_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_max_container_price' ] ) ) );
+				} else {
+					$product->delete_meta_data( '_mnm_max_container_price' );
+				}
 
-		$params = array(
+				if ( ! empty( $_POST[ '_mnm_min_container_price' ] ) ) {
+					$product->update_meta_data( '_mnm_min_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_min_container_price' ] ) ) );
+				} else {
+					$product->delete_meta_data( '_mnm_min_container_price' );
+				}
+
+			}
+		}
+
+
+
+		/*-----------------------------------------------------------------------------------*/
+		/* Cart Functions */
+		/*-----------------------------------------------------------------------------------*/
+
+
+		/**
+		 * Server-side validation
+		 * 
+		 * @param WP_Error $errors
+		 * @param obj WC_Product_Mix_and_Match $product
+		 * @param obj WC_Mix_and_Match_Stock_Manager $mnm_stock
+		 * @return  WP_Error 
+		 */
+		public static function validation( $errors, $product, $mnm_stock ) {
+
+			if ( self::validate_by_price( $product ) ) {
+
+				// Remove quantity-based errors.
+				$errors->remove( 'wc_mnm_configuration_too_many_items' );
+				$errors->remove( 'wc_mnm_configuration_too_few_items' );
+
+				$selected_items = $mnm_stock->get_items();
+
+				$total_price = 0;
+
+				foreach ( $selected_items as $selected_item ) {
+					$selected_product = $selected_item->get_product();
+					$total_price     += $selected_product ? $selected_product->get_price() * $selected_item->get_quantity() : 0;
+				}
+
+				$min_price = wc_format_decimal( $product->get_meta( '_mnm_min_container_price', true ) );
+				$max_price = wc_format_decimal( $product->get_meta( '_mnm_max_container_price', true ) );
+
+				// Validate the total price.
+				if ( $min_price && $total_price < $min_price ) {
+					$notice = sprintf( esc_html( 'You have not selected enough product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $max_price ) );
+					$errors->add( 'wc_mnm_configuration_price_too_low', $notice );
+				} elseif ( $max_price && $total_price > $max_price ) {
+					$notice = sprintf( esc_html( 'You have selected too much product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $min_price ) );
+					$errors->add( 'wc_mnm_configuration_price_too_high', $notice );
+				}
+
+			}
+
+			return $errors;
+		}
+
+		/*-----------------------------------------------------------------------------------*/
+		/* Scripts and Styles */
+		/*-----------------------------------------------------------------------------------*/
+
+		/**
+		 * Register scripts
+		 *
+		 * @return void
+		 */
+		public static function register_scripts() {
+
+			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+
+			wp_register_script( 'wc-add-to-cart-mnm-price-validation', plugins_url( '/assets/js/frontend/wc-add-to-cart-mnm-price-validation' . $suffix . '.js', __FILE__ ), array( 'wc-add-to-cart-mnm' ), self::VERSION, true );
+
+			$params = array(
 			// translators: %s is current selected price
 			'i18n_price_message'                   => __( 'You have selected %s worth of product. ', 'wc-mnm-price' ),
 
@@ -326,98 +323,94 @@ class WC_MNM_Price {
 			// translators: %v is the error message. %min is the script placeholder for formatted min price. %max is script placeholder for formatted max price.
 			'i18n_max_price_error'                 => __( '%vPlease choose fewer than %max to continue&hellip;', 'wc-mnm-price' ),
 
-		);
-
-		wp_localize_script( 'wc-add-to-cart-mnm-price-validation', 'wc_mnm_price_params', $params );
-
-	}
-
-	/**
-	 * Script parameters
-	 *
-	 * @param  array $params
-	 * @param  obj WC_Mix_and_Match_Product
-	 * 
-	 * @return array
-	 */
-	public static function add_data_attributes( $params, $product ) {
-
-		if ( self::validate_by_price( $product ) ) {
-
-			$new_params = array(
-				'validation_mode' => $product->get_meta( '_mnm_validation_mode', true ),
-			    'min_price'       => $product->get_meta( '_mnm_min_container_price', true ),
-				'max_price'		  => $product->get_meta( '_mnm_max_container_price', true )
 			);
 
-			$params = array_merge( $params, $new_params );
-
+			wp_localize_script( 'wc-add-to-cart-mnm-price-validation', 'wc_mnm_price_params', $params );
 		}
 
-		return $params;
+		/**
+		 * Script parameters
+		 *
+		 * @param  array $params
+		 * @param  obj WC_Mix_and_Match_Product
+		 * 
+		 * @return array
+		 */
+		public static function add_data_attributes( $params, $product ) {
 
-	}
+			if ( self::validate_by_price( $product ) ) {
 
+				$new_params = array(
+				'validation_mode' => $product->get_meta( '_mnm_validation_mode', true ),
+				'min_price'       => $product->get_meta( '_mnm_min_container_price', true ),
+				'max_price'       => $product->get_meta( '_mnm_max_container_price', true ),
+				);
 
-	/**
-	 * Load the script anywhere the MNN add to cart button is displayed
-	 * 
-	 * @return void
-	 */
-	public static function load_scripts() {
-		wp_enqueue_script( 'wc-add-to-cart-mnm-price-validation' );
-	}
+				$params = array_merge( $params, $new_params );
 
+			}
 
-	/**
-	 * Set min back to zero
-	 *
-	 * @param  int $size
-	 * @param  obj WC_Mix_and_Match_Product
-	 * 
-	 * @return int
-	 */
-	public static function remove_min_size( $size, $product ) {
-		return self::validate_by_price( $product ) ? 0 : $size;
-	}
-
-	/**
-	 * Set max back to unlimited
-	 *
-	 * @param  int $size
-	 * @param  obj WC_Mix_and_Match_Product
-	 * 
-	 * @return int
-	 */
-	public static function remove_max_size( $size, $product ) {
-		return self::validate_by_price( $product ) ? '' : $size;
-	}
-
-	/*-----------------------------------------------------------------------------------*/
-	/* Helpers                                                                           */
-	/*-----------------------------------------------------------------------------------*/
-
-	/**
-	 * Does this product validate by price.
-	 * 
-	 * @param  WC_Product
-	 * @return bool
-	 */
-	public static function validate_by_price( $product ) {
-		return $product && $product->is_type( 'mix-and-match' ) && $product->is_priced_per_product() && 'price' === $product->get_meta( '_mnm_validation_mode', true );
-	}
-
-	/**
-	 * Get allowed validation options
-	 *
-	 * @return array
-	 */
-	public static function get_validation_options() {
-		return array_unique( (array) apply_filters( 'wc_mnm_validation_options', array() ) );
-	}
+			return $params;
+		}
 
 
-} //end class: do not remove or there will be no more guacamole for you
+		/**
+		 * Load the script anywhere the MNN add to cart button is displayed
+		 * 
+		 * @return void
+		 */
+		public static function load_scripts() {
+			wp_enqueue_script( 'wc-add-to-cart-mnm-price-validation' );
+		}
+
+
+		/**
+		 * Set min back to zero
+		 *
+		 * @param  int $size
+		 * @param  obj WC_Mix_and_Match_Product
+		 * 
+		 * @return int
+		 */
+		public static function remove_min_size( $size, $product ) {
+			return self::validate_by_price( $product ) ? 0 : $size;
+		}
+
+		/**
+		 * Set max back to unlimited
+		 *
+		 * @param  int $size
+		 * @param  obj WC_Mix_and_Match_Product
+		 * 
+		 * @return int
+		 */
+		public static function remove_max_size( $size, $product ) {
+			return self::validate_by_price( $product ) ? '' : $size;
+		}
+
+		/*-----------------------------------------------------------------------------------*/
+		/* Helpers                                                                           */
+		/*-----------------------------------------------------------------------------------*/
+
+		/**
+		 * Does this product validate by price.
+		 * 
+		 * @param  WC_Product
+		 * @return bool
+		 */
+		public static function validate_by_price( $product ) {
+			return $product && $product->is_type( 'mix-and-match' ) && $product->is_priced_per_product() && 'price' === $product->get_meta( '_mnm_validation_mode', true );
+		}
+
+		/**
+		 * Get allowed validation options
+		 *
+		 * @return array
+		 */
+		public static function get_validation_options() {
+			return array_unique( (array) apply_filters( 'wc_mnm_validation_options', array() ) );
+		}
+	} //end class: do not remove or there will be no more guacamole for you
 
 endif; // end class_exists check
 
