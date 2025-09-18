@@ -30,7 +30,7 @@ class WC_MNM_Price {
 	 * constants
 	 */
 	const VERSION = '1.3.2';
-	const REQUIRED_WOO = '4.0.0';
+	const REQ_MNM_VERSION = '2.8.0';
 
 	/**
 	 * WC_MNM_Price Constructor
@@ -40,8 +40,8 @@ class WC_MNM_Price {
 	 */
 	public static function init() {
 
-		// Quietly quit if MNM is not active.
-		if ( ! function_exists( 'wc_mix_and_match' ) ) {
+		// Quietly quit if Mix and Match is not active or below required version.
+		if ( ! function_exists( 'wc_mix_and_match' ) || version_compare( wc_mix_and_match()->version, self::REQ_MNM_VERSION, '<' ) ) {
 			return false;
 		}
 
