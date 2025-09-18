@@ -19,8 +19,6 @@
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-
-
 /**
  * The Main WC_MNM_Price class
  **/
@@ -178,21 +176,20 @@ class WC_MNM_Price {
 
 
 				$( '#mnm_product_data input.mnm_validation_mode' ).change( function() {
-
 					var value = $( this ).val();
 
-					if( '' === value ) {
+					if ( '' === value ) {
 						$( '#mnm_product_data .mnm_container_size_options' ).show();
 						$( '#mnm_product_data .show_if_validate_by_price' ).hide();
 					} else {
 						$( '#mnm_product_data .mnm_container_size_options' ).hide();
-						if( 'price' === value ) {
+						if ( 'price' === value ) {
 							$( '#mnm_product_data .show_if_validate_by_price' ).show();
 						} else {
 							$( '#mnm_product_data .show_if_validate_by_price' ).hide();
 						}
 					}
-				} );
+				});
 
 				$( '#mnm_product_data input.mnm_validation_mode:checked' ).change();
 
@@ -211,7 +208,7 @@ class WC_MNM_Price {
 	 * @return array
 	 */
 	public static function validation_options( $options ) {
-		$options[ '' ]       = esc_html__( 'Use default', 'wc-mnm-price' );
+		$options[ '' ]      = esc_html__( 'Use default', 'wc-mnm-price' );
 		$options[ 'price' ] = esc_html__( 'Validate by price', 'wc-mnm-price' );
 		return $options;
 	}
@@ -227,19 +224,19 @@ class WC_MNM_Price {
 
 			$allowed_options = self::get_validation_options();
 
-			if( ! empty( $_POST[ '_mnm_validation_mode' ] ) && array_key_exists( $_POST[ '_mnm_validation_mode' ], $allowed_options ) ) {
+			if ( ! empty( $_POST[ '_mnm_validation_mode' ] ) && array_key_exists( $_POST[ '_mnm_validation_mode' ], $allowed_options ) ) {
 				$product->update_meta_data( '_mnm_validation_mode', wc_clean( $_POST[ '_mnm_validation_mode' ] ) );
 			} else {
 				$product->delete_meta_data( '_mnm_validation_mode' );
 			}
 
-			if( ! empty( $_POST[ '_mnm_max_container_price' ] ) ) {
+			if ( ! empty( $_POST[ '_mnm_max_container_price' ] ) ) {
 				$product->update_meta_data( '_mnm_max_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_max_container_price' ] ) ) );
 			} else {
 				$product->delete_meta_data( '_mnm_max_container_price' );
 			}
 
-			if( ! empty( $_POST[ '_mnm_min_container_price' ] ) ) {
+			if ( ! empty( $_POST[ '_mnm_min_container_price' ] ) ) {
 				$product->update_meta_data( '_mnm_min_container_price', wc_clean( wp_unslash( $_POST[ '_mnm_min_container_price' ] ) ) );
 			}	else {
 				$product->delete_meta_data( '_mnm_min_container_price' );
@@ -343,7 +340,7 @@ class WC_MNM_Price {
 	 */
 	public static function add_data_attributes( $params, $product ) {
 
-		if( self::validate_by_price( $product ) ) {
+		if ( self::validate_by_price( $product ) ) {
 
 			$new_params = array(
 				'validation_mode' => $product->get_meta( '_mnm_validation_mode', true ),
