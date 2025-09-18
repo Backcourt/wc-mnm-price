@@ -65,9 +65,9 @@
     },
     "strauss": {
       "target_directory": "packages",
-      "namespace_prefix": "Backcourt\\MNMWeight\\Vendor",
-      "classmap_prefix": "Backcourt_MNM_Weight_Vendor_",
-      "constant_prefix": "BCMNMWeight_"
+      "namespace_prefix": "Backcourt\\MNMPrice\\Vendor",
+      "classmap_prefix": "Backcourt_MNM_Price_Vendor_",
+      "constant_prefix": "BCMNMPrice_"
     }
   }
 }
