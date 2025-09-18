@@ -256,41 +256,43 @@ class WC_MNM_Price {
 	/**
 	 * Server-side validation
 	 * 
-	 * @param bool $is_valid
+	 * @param WP_Error $errors
 	 * @param obj WC_Product_Mix_and_Match $product
 	 * @param obj WC_Mix_and_Match_Stock_Manager $mnm_stock
-	 * @return  bool 
+	 * @return  WP_Error 
 	 */
-	public static function validation( $valid, $product, $mnm_stock ) {
+	public static function validation( $errors, $product, $mnm_stock ) {
 
-		if( self::validate_by_price( $product ) ) {		
+		if ( self::validate_by_price( $product ) ) {
 
-			$managed_items = $mnm_stock->get_managed_items();
+			// Remove quantity-based errors.
+			$errors->remove( 'wc_mnm_configuration_too_many_items' );
+			$errors->remove( 'wc_mnm_configuration_too_few_items' );
+
+			$selected_items = $mnm_stock->get_items();
 
 			$total_price = 0;
 
-			foreach ( $managed_items as $managed_item_id => $managed_item ) {
-				$managed_product       = wc_get_product( $managed_item_id );
-				$item_title            = $managed_product->get_title();
-				$total_price 		  += $managed_product->get_price() * $managed_item[ 'quantity' ];
+			foreach ( $selected_items as $selected_item ) {
+				$selected_product = $selected_item->get_product();
+				$total_price    += $selected_product ? $selected_product->get_price() * $selected_item->get_quantity() : 0;
 			}
+
+			$min_price = wc_format_decimal( $product->get_meta( '_mnm_min_container_price', true ) );
+			$max_price = wc_format_decimal( $product->get_meta( '_mnm_max_container_price', true ) );
 
 			// Validate the total price.
-			if ( $total_price < $product->get_meta( '_mnm_min_container_price' ) ) {
-				$error_message = sprintf( __( 'Your &quot;%s&quot; is too inexpensive.', 'wc-mnm-price' ), $product->get_title() );
-				wc_add_notice( $error_message, 'error' );
-				$valid = false;
-			} elseif ( $total_price > $product->get_meta( '_mnm_max_container_price' ) ) {
-				$error_message = sprintf( __( 'Your &quot;%s&quot; is too expensive.', 'wc-mnm-price' ), $product->get_title() );
-				wc_add_notice( $error_message, 'error' );
-				$valid = false;
+			if ( $min_price && $total_price < $min_price ) {
+				$notice = sprintf( esc_html( 'You have not selected enough product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $max_price ) );
+				$errors->add( 'wc_mnm_configuration_price_too_low', $notice );
+			} elseif ( $max_price && $total_price > $max_price ) {
+				$notice = sprintf( esc_html( 'You have selected too much product, please choose %s worth of product.', 'wc-mnm-price' ), wc_price( $min_price ) );
+				$errors->add( 'wc_mnm_configuration_price_too_high', $notice );
 			}
-
-			$valid = true;
 
 		}
 
-		return $valid;
+		return $errors;
 	}
 
 	/*-----------------------------------------------------------------------------------*/
