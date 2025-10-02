@@ -2,7 +2,7 @@
 /**
  * Plugin URI: http://www.woocommerce.com/products/woocommerce-mix-and-match-products/
  * Plugin Name: WC Mix and Match - By Price
- * Version: 1.3.2
+ * Version: 2.0.0
  * Description: Validate container by price, requires MNM 1.10.5
  * Author: Kathy Darling
  * Author URI: http://kathyisawesome.com/
