@@ -1,4 +1,4 @@
-# WooCommerce Mix and Match Products - Price Validation
+# WC Mix and Match Products - Price Validation
 
 ### Quickstart
 
